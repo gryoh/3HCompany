@@ -39,6 +39,8 @@ body {
     height: 100%;
     z-index: 0;
     pointer-events: none;
+    isolation: isolate;
+    contain: strict;
 }
 
 .gradient-blob {
@@ -46,7 +48,8 @@ body {
     border-radius: 50%;
     filter: blur(100px);
     opacity: 0.4;
-    animation: float 25s ease-in-out infinite;
+    will-change: transform;
+    /* animation: float 제거 - JS parallax와 transform 충돌하여 무한 repaint 유발 */
 }
 
 .blob-1 {
@@ -55,7 +58,6 @@ body {
     background: linear-gradient(135deg, #0e52ff 0%, #0840cc 100%);
     top: -250px;
     right: -250px;
-    animation-delay: 0s;
 }
 
 .blob-2 {
@@ -64,7 +66,6 @@ body {
     background: linear-gradient(135deg, #ff00ff 0%, #8b00ff 100%);
     bottom: -200px;
     left: -200px;
-    animation-delay: -8s;
 }
 
 .blob-3 {
@@ -73,22 +74,16 @@ body {
     background: linear-gradient(135deg, #0e52ff 0%, #0a3fcc 100%);
     top: 50%;
     left: 50%;
-    animation-delay: -16s;
 }
 
-@keyframes float {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    33% { transform: translate(150px, -150px) rotate(120deg); }
-    66% { transform: translate(-150px, 150px) rotate(240deg); }
-}
+/* @keyframes float 제거됨 - JS parallax로 대체 */
 
 /* Navigation */
 nav {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(10, 10, 10, 0.85);
-    backdrop-filter: blur(30px);
+    background: rgba(10, 10, 10, 0.95);
     z-index: 1000;
     padding: 1.8rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -197,12 +192,11 @@ nav {
     position: relative;
     overflow: hidden;
     padding-top: 200px;
+    margin: 0 4rem;
 }
 
 .hero-container {
-    max-width: 1920px;
-    margin: 0 auto;
-    padding: 0 4rem;
+    width: 100%;
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 6rem;
@@ -232,6 +226,7 @@ nav {
     margin-bottom: 2rem;
     line-height: 1.1;
     letter-spacing: -2px;
+    min-height: 8.8rem;
 }
 
 .typing-text {
@@ -239,17 +234,19 @@ nav {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    display: inline-block;
+    display: inline;
 }
 
 .cursor {
     display: inline-block;
     width: 4px;
-    height: 4rem;
+    height: 1em;
     background: #0e52ff;
     animation: blink 1s infinite;
-    margin-left: 8px;
-    vertical-align: middle;
+    margin-left: 4px;
+    vertical-align: baseline;
+    position: relative;
+    top: 0.15em;
 }
 
 @keyframes blink {
@@ -340,7 +337,6 @@ nav {
 
 .visual-card {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(30px);
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 40px;
     padding: 3.5rem;
@@ -418,7 +414,8 @@ nav {
 }
 
 .container {
-    max-width: 1920px;
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 4rem;
 }
@@ -545,13 +542,15 @@ nav {
 .solution-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 4rem;
+    gap: 2rem;
     margin-top: 5rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .solution-card {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(30px);
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 30px;
     padding: 3rem 2.5rem;
@@ -747,43 +746,42 @@ nav {
 /* Contact Section */
 .contact-section {
     min-height: 80vh;
-    /*padding: 6rem 0 0;*/
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .contact-content {
+    width: 100%;
     max-width: 1000px;
     margin: 0 auto;
     padding: 4rem;
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(30px);
     border-radius: 40px;
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.contact-content p {
+.contact-text {
     text-align: center;
-    color: #bbb;
-    font-size: 1.5rem;
-    margin-top: 3rem;
+    color: #aaa;
+    font-size: 1.2rem;
+    /*margin-top: 3rem;*/
     line-height: 2;
 }
 
-.contact-content a {
-    color: #0e52ff;
+.contact-email {
+    color: #00d4ff;
     text-decoration: none;
-    font-weight: 700;
-    font-size: 1.8rem;
+    font-weight: 600;
     transition: all 0.3s;
     display: inline-block;
 }
 
-.contact-content a:hover {
+.contact-email:hover {
     transform: scale(1.1);
-    text-shadow: 0 0 20px rgba(14, 82, 255, 0.8);
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
 }
 
 /* Responsive */
@@ -798,209 +796,395 @@ nav {
 }
 
 @media (max-width: 1400px) {
-    .nav-container,
-    .container {
+    .nav-container {
         padding: 0 3rem;
     }
     
-    .hero-container {
+    .hero {
+        margin: 0 3rem;
+    }
+    
+    .container {
         padding: 0 3rem;
     }
 }
 
 @media (max-width: 1024px) {
+    .hero {
+        min-height: auto;
+        padding-top: 120px;
+        padding-bottom: 3rem;
+        margin: 0 2rem;
+    }
+    
+    .container {
+        padding: 0 2rem;
+    }
+    
     .hero-container {
         grid-template-columns: 1fr;
         text-align: center;
-        gap: 4rem;
+        gap: 3rem;
     }
 
     .hero-content h1 {
-        font-size: 3.5rem;
-    }
-
-    .hero-visual {
-        margin-top: 2rem;
-        height: 500px;
-    }
-    
-    .visual-card {
-        padding: 2.5rem;
-    }
-    
-    .visual-card h3 {
-        font-size: 1.3rem;
-    }
-    
-    .visual-comparison {
-        gap: 2rem;
-    }
-    
-    .comparison-item {
-        padding: 1.5rem;
-    }
-
-    .problem-grid,
-    .benefits-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .solution-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .section-title {
         font-size: 3rem;
     }
-}
 
-@media (max-width: 768px) {
-    .hero-content h1 {
-        font-size: 2.5rem;
-    }
-
-    .cursor {
-        height: 2.5rem;
-    }
-
-    .nav-menu {
-        display: none;
-    }
-    
-    .hero-buttons {
-        flex-direction: column;
-        gap: 1.2rem;
-    }
-    
-    .btn {
-        width: 100%;
-        padding: 1.1rem 2rem;
-        font-size: 1rem;
-    }
-    
     .hero-visual {
+        margin-top: 1rem;
         height: auto;
-        padding: 0 1rem;
     }
     
     .visual-card {
-        padding: 2rem 1.5rem;
-        border-radius: 25px;
+        padding: 2rem;
     }
     
     .visual-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
     }
     
     .visual-comparison {
-        flex-direction: column;
         gap: 1.5rem;
-    }
-    
-    .comparison-item {
-        padding: 1.5rem;
-        border-radius: 15px;
-    }
-    
-    .comparison-label {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Problem Card 모바일 최적화 */
-    .problem-card {
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
-    }
-    
-    .problem-icon {
-        font-size: 3rem;
-        margin-bottom: 1.2rem;
-    }
-    
-    .problem-card h3 {
-        font-size: 1.2rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .problem-card p {
-        font-size: 0.95rem;
-        line-height: 1.5;
-    }
-
-    .problem-grid,
-    .benefits-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .section-title {
-        font-size: 2.5rem;
-    }
-    
-    .nav-container,
-    .container,
-    .hero-container {
-        padding: 0 2rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-content h1 {
-        font-size: 2rem;
-    }
-    
-    .cursor {
-        height: 2rem;
-        width: 2px;
-    }
-    
-    .hero-content p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    
-    .hero-buttons {
-        gap: 1rem;
-    }
-    
-    .btn {
-        padding: 1rem 1.5rem;
-        font-size: 0.95rem;
-        border-radius: 50px;
-    }
-    
-    .visual-card {
-        padding: 1.5rem 1rem;
-    }
-    
-    .visual-card h3 {
-        font-size: 1rem;
-        margin-bottom: 1.2rem;
     }
     
     .comparison-item {
         padding: 1.2rem;
     }
+
+    .problem-section,
+    .solution-overview,
+    .benefits-section {
+        min-height: auto;
+        padding: 4rem 0;
+        display: block;
+    }
     
-    /* Problem Card 초소형 모바일 최적화 */
+    .section-subtitle {
+        margin-bottom: 3rem;
+    }
+
+    .problem-grid,
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .solution-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .benefits-grid {
+        margin-top: 2rem;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    /* 네비게이션 축소 */
+    nav {
+        padding: 1rem 0;
+    }
+    
+    .nav-menu {
+        display: none;
+    }
+    
+    /* Hero 축소 */
+    .hero {
+        min-height: auto;
+        padding-top: 120px;
+        padding-bottom: 2rem;
+    }
+    
+    .hero-container {
+        gap: 2rem;
+    }
+    
+    .hero-content h1 {
+        font-size: 2.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 0.9rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .hero-visual {
+        height: auto;
+        padding: 0;
+    }
+    
+    .visual-card {
+        padding: 1.5rem 1rem;
+        border-radius: 20px;
+    }
+    
+    .visual-card h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .visual-comparison {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .comparison-item {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .comparison-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    /* 섹션 공통 축소 */
+    .hero {
+        margin: 0 20px;
+    }
+    
+    .container {
+        padding: 0 20px;
+    }
+    
+    .problem-section,
+    .solution-overview,
+    .benefits-section {
+        min-height: auto;
+        padding: 3rem 0;
+        display: block;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .section-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+    
+    .nav-container {
+        padding: 0 1.5rem;
+    }
+    
+    /* Problem 축소 */
+    .problem-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
     .problem-card {
         padding: 1.5rem 1.2rem;
-        border-radius: 15px;
+        border-radius: 16px;
     }
     
     .problem-icon {
         font-size: 2.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
     }
     
     .problem-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: 0.7rem;
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
     }
     
     .problem-card p {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+    
+    /* Solution 축소 */
+    .solution-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-top: 0;
+    }
+    
+    .solution-card {
+        padding: 1.5rem 1.2rem;
+        border-radius: 20px;
+    }
+    
+    .solution-number {
+        width: 45px;
+        height: 45px;
+        line-height: 45px;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .solution-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .solution-card p {
+        font-size: 0.85rem;
+    }
+    
+    .solution-features {
+        margin: 1rem 0;
+    }
+    
+    .solution-features li {
+        padding: 0.7rem 0;
+        padding-left: 25px;
+        font-size: 0.85rem;
+    }
+    
+    .learn-more {
+        font-size: 0.85rem;
+        margin-top: 0.8rem;
+    }
+    
+    /* Benefits 축소 */
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 0;
+    }
+    
+    .benefit-card {
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+    }
+    
+    .benefit-number {
+        font-size: 2.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .benefit-card h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .benefit-card p {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    /* Contact 축소 */
+    .contact-section {
+        min-height: auto;
+        padding: 2rem 0;
+    }
+    
+    .contact-content {
+        padding: 1.5rem 1.2rem;
+        border-radius: 20px;
+    }
+    
+    .contact-text {
+        font-size: 1rem;
+        margin-top: 1rem;
+        line-height: 1.6;
+    }
+    
+    .contact-email {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 2.6rem;
+    }
+    
+    .hero-content p {
         font-size: 0.9rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    .hero-buttons {
+        gap: 0.6rem;
+    }
+    
+    .btn {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.85rem;
+        border-radius: 50px;
+    }
+    
+    .visual-card {
+        padding: 1.2rem 0.8rem;
+    }
+    
+    .visual-card h3 {
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .comparison-item {
+        padding: 0.8rem;
+    }
+    
+    /* 섹션 더 축소 */
+    .problem-section,
+    .solution-overview,
+    .benefits-section {
+        padding: 2rem 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .section-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .logo {
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+    }
+    
+    /* Problem 더 축소 */
+    .problem-card {
+        padding: 1.2rem 1rem;
+        border-radius: 12px;
+    }
+    
+    .problem-icon {
+        font-size: 2rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .problem-card h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .problem-card p {
+        font-size: 0.8rem;
         line-height: 1.4;
     }
     
@@ -1012,22 +1196,47 @@ nav {
         transform: scale(1.1) rotate(5deg);
     }
     
-    .section-title {
-        font-size: 2rem;
+    /* Benefits 2열 유지, 더 축소 */
+    .benefits-grid {
+        gap: 0.8rem;
     }
     
-    .section-subtitle {
+    .benefit-card {
+        padding: 1.2rem 0.8rem;
+        border-radius: 12px;
+    }
+    
+    .benefit-number {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .benefit-card h3 {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .benefit-card p {
+        font-size: 0.75rem;
+    }
+    
+    /* Contact 더 축소 */
+    .contact-section {
+        padding: 1.5rem 0;
+    }
+    
+    .contact-content {
+        padding: 1.2rem 0.8rem;
+        border-radius: 16px;
+    }
+    
+    .contact-text {
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .contact-email {
         font-size: 1rem;
-    }
-    
-    .nav-container,
-    .container,
-    .hero-container {
-        padding: 0 1.5rem;
-    }
-    
-    .logo {
-        font-size: 1.5rem;
-        letter-spacing: 2px;
     }
 }

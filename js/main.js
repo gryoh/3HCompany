@@ -23,7 +23,7 @@ $(document).ready(function() {
                 setTimeout(type, 300);
             }
         } else {
-            // 타이핑 완료 후 10초 대기
+            // 타이핑 완료 후 5초 대기
             isTyping = false;
             setTimeout(restartTyping, 5000);
         }
@@ -46,6 +46,11 @@ $(document).ready(function() {
 
     // Smooth scroll
     $('a[href^="#"]').on('click', function(e) {
+        // learn-more 링크는 별도 처리
+        if ($(this).hasClass('learn-more')) {
+            return;
+        }
+        
         e.preventDefault();
         var target = $(this.getAttribute('href'));
         if(target.length) {
@@ -55,38 +60,35 @@ $(document).ready(function() {
         }
     });
 
+    // Learn more button alert
+    $('.learn-more').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('준비중 입니다.');
+    });
+
     // Active navigation on scroll
     function updateActiveNav() {
         var scrollPos = $(window).scrollTop() + 150;
-        var found = false;
+        var sections = $('section[id]');
         
-        $('section[id]').each(function() {
+        // 가장 가까운 섹션 찾기
+        var currentSection = null;
+        sections.each(function() {
             var sectionTop = $(this).offset().top - 100;
-            var sectionBottom = sectionTop + $(this).outerHeight();
-            var sectionId = $(this).attr('id');
-            
-            if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
-                if (!found) {
-                    $('.nav-link').removeClass('active');
-                    $('.nav-link[href="#' + sectionId + '"]').addClass('active');
-                    found = true;
-                }
+            if (scrollPos >= sectionTop) {
+                currentSection = $(this).attr('id');
             }
         });
         
-        if ($(window).scrollTop() < 100) {
+        // 네비게이션 업데이트
+        if (currentSection) {
             $('.nav-link').removeClass('active');
-            $('.nav-link[href="#home"]').addClass('active');
-        }
-        
-        if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-            $('.nav-link').removeClass('active');
-            $('.nav-link[href="#contact"]').addClass('active');
+            $('.nav-link[href="#' + currentSection + '"]').addClass('active');
         }
     }
 
-    // Scroll animation - COMPLETELY REWRITTEN & FIXED
-    var isAnimating = false;
+    // Scroll animation - 최적화 버전
     var animatedCards = {
         problem: new Set(),
         solution: new Set(),
@@ -94,141 +96,77 @@ $(document).ready(function() {
     };
     
     function animateOnScroll() {
-        // 이미 애니메이션 중이면 스킵
-        if (isAnimating) return;
-        isAnimating = true;
-        
-        var viewportTop = $(window).scrollTop();
-        var viewportBottom = viewportTop + $(window).height();
+        var viewportBottom = $(window).scrollTop() + $(window).height();
         var triggerPoint = viewportBottom - 150;
         
-        // Problem cards - 한 번만 실행
+        // Problem cards
         $('.problem-card').each(function(index) {
             var cardId = 'p-' + index;
-            
-            // 이미 애니메이션된 카드는 완전히 스킵
             if (animatedCards.problem.has(cardId)) return;
             
-            var $card = $(this);
-            var elementTop = $card.offset().top;
-            
-            // viewport 안에 들어오면 애니메이션
+            var elementTop = $(this).offset().top;
             if (elementTop < triggerPoint) {
                 animatedCards.problem.add(cardId);
-                
-                // 딜레이 후 애니메이션
-                setTimeout(function() {
-                    if (!$card.hasClass('animated')) {
-                        $card.addClass('animated');
-                    }
-                }, index * 100);
+                $(this).addClass('animated');
             }
         });
 
         // Solution cards
         $('.solution-card').each(function(index) {
             var cardId = 's-' + index;
-            
             if (animatedCards.solution.has(cardId)) return;
             
-            var $card = $(this);
-            var elementTop = $card.offset().top;
-            
+            var elementTop = $(this).offset().top;
             if (elementTop < triggerPoint) {
                 animatedCards.solution.add(cardId);
-                
-                setTimeout(function() {
-                    if (!$card.hasClass('animated')) {
-                        $card.addClass('animated');
-                    }
-                }, index * 200);
+                $(this).addClass('animated');
             }
         });
 
         // Benefit cards
         $('.benefit-card').each(function(index) {
             var cardId = 'b-' + index;
-            
             if (animatedCards.benefit.has(cardId)) return;
             
-            var $card = $(this);
-            var elementTop = $card.offset().top;
-            
+            var elementTop = $(this).offset().top;
             if (elementTop < triggerPoint) {
                 animatedCards.benefit.add(cardId);
-                
-                setTimeout(function() {
-                    if (!$card.hasClass('animated')) {
-                        $card.addClass('animated');
-                    }
-                }, index * 150);
+                $(this).addClass('animated');
             }
         });
-        
-        // 애니메이션 플래그 리셋
-        setTimeout(function() {
-            isAnimating = false;
-        }, 100);
     }
 
-    // Throttled scroll event - 통합
-    var scrollTimeout;
-    var lastScrollTime = 0;
-    var isScrolling = false;
+    // Parallax effect for blobs (translate3d for GPU compositing)
+    function updateParallax() {
+        var scrolled = $(window).scrollTop();
+        $('.blob-1').css('transform', 'translate3d(' + (scrolled * 0.3) + 'px, ' + (scrolled * -0.2) + 'px, 0)');
+        $('.blob-2').css('transform', 'translate3d(' + (scrolled * -0.2) + 'px, ' + (scrolled * 0.3) + 'px, 0)');
+        $('.blob-3').css('transform', 'translate3d(' + (scrolled * 0.15) + 'px, ' + (scrolled * 0.15) + 'px, 0)');
+    }
+
+    // 통합 스크롤 핸들러 - requestAnimationFrame으로 throttling
+    var ticking = false;
     
-    function handleScroll() {
-        var now = Date.now();
-        
-        // 너무 빠른 호출 방지
-        if (now - lastScrollTime < 100) {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(handleScroll, 100);
-            return;
-        }
-        
-        lastScrollTime = now;
-        
-        // 스크롤 이벤트 처리
-        if (!isScrolling) {
-            isScrolling = true;
-            
+    function onScroll() {
+        if (!ticking) {
             requestAnimationFrame(function() {
                 updateActiveNav();
                 animateOnScroll();
-                isScrolling = false;
+                updateParallax();
+                ticking = false;
             });
+            ticking = true;
         }
     }
     
-    $(window).on('scroll', handleScroll);
+    // 스크롤 이벤트 단일 등록
+    $(window).on('scroll', onScroll);
     
     // Initial calls
     setTimeout(function() {
         updateActiveNav();
         animateOnScroll();
     }, 100);
-
-    // Parallax effect for blobs - 최적화
-    var lastParallaxTime = 0;
-    
-    function updateParallax() {
-        var now = Date.now();
-        if (now - lastParallaxTime < 50) return;
-        
-        lastParallaxTime = now;
-        
-        requestAnimationFrame(function() {
-            var scrolled = $(window).scrollTop();
-            var maxScroll = Math.max($(document).height() - $(window).height(), 1);
-            var scrollRatio = Math.min(scrolled / maxScroll, 1);
-            
-            $('.blob-1').css('transform', 'translate(' + (scrolled * 0.3) + 'px, ' + (scrolled * -0.2) + 'px)');
-            $('.blob-2').css('transform', 'translate(' + (scrolled * -0.2) + 'px, ' + (scrolled * 0.3) + 'px)');
-            $('.blob-3').css('transform', 'translate(' + (scrolled * 0.15) + 'px, ' + (scrolled * 0.15) + 'px)');
-        });
-    }
-    
-    $(window).on('scroll', updateParallax);
 
     console.log('✅ Page initialized successfully');
     console.log('📊 Cards found:', {
