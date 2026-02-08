@@ -754,7 +754,7 @@ nav {
 }
 
 .contact-content {
-    width: 100%;
+    width: 40%;
     max-width: 1000px;
     margin: 0 auto;
     padding: 4rem;
@@ -882,6 +882,10 @@ nav {
     
     .section-title {
         font-size: 2.5rem;
+    }
+    
+    .contact-content {
+        width: 70%;
     }
 }
 
@@ -1094,6 +1098,7 @@ nav {
     }
     
     .contact-content {
+        width: 100%;
         padding: 1.5rem 1.2rem;
         border-radius: 20px;
     }
